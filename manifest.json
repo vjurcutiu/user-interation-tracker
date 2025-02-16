@@ -1,20 +1,28 @@
 {
-    "manifest_version": 3,
-    "name": "Interaction Recorder",
-    "version": "1.0",
-    "permissions": ["activeTab", "scripting", "storage"],
-    "host_permissions": ["<all_urls>"],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ],
-    "action": {
-      "default_popup": "popup.html"
+  "manifest_version": 3,
+  "name": "Interaction Recorder",
+  "version": "1.0",
+  "permissions": ["activeTab", "scripting", "storage", "notifications", "downloads"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/init.js"],
+      "type": "module"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "toggle-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z"
+      },
+      "description": "Toggle recording of user interactions"
     }
   }
-  
+}

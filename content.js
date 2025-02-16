@@ -116,3 +116,70 @@ if (document.readyState === 'loading') {
 } else {
   initialize();
 }
+
+// Listen for messages from background script to start/stop recording
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "start") {
+    console.log("Recording started.");
+    attachListeners();
+    // Optionally start additional recording functionality, e.g., monitor DOM changes
+  } else if (message.action === "stop") {
+    console.log("Recording stopped.");
+    detachListeners();
+    // Optionally stop any other recording functionality
+  }
+});
+
+// Throttle function to limit the rate of execution
+function throttle(func, limit) {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+function handleMouseMove(event) {
+  const mouseData = {
+    type: 'mousemove',
+    timestamp: new Date().toISOString(),
+    coordinates: {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+    },
+    url: window.location.href,
+  };
+  safeSendMessage({ interactionData: mouseData });
+}
+
+// Attaching mousemove listener with throttling (e.g., every 200ms)
+document.addEventListener('mousemove', throttle(handleMouseMove, 200));
+
+function handleContextMenu(event) {
+  // Build a data object for the context menu interaction
+  const interactionData = {
+    type: 'contextmenu',
+    target: event.target.tagName,
+    id: event.target.id || null,
+    classes: event.target.className || null,
+    timestamp: new Date().toISOString(),
+    url: window.location.href,
+    mouseCoordinates: {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+    }
+  };
+
+  // Send the interaction data via your existing messaging function
+  safeSendMessage({ interactionData });
+}
+
+// Attach the context menu listener to the document
+document.addEventListener('contextmenu', handleContextMenu);
